@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-1r&%w_+97gl+axz7=8i$$!z_0u$jviq)stt#)tmipr_==$ochp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['192.168.10.14', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['192.168.10.14', 'localhost', '127.0.0.1', 'Anishbh06.pythonanywhere.com']
 
 
 # Application definition
@@ -74,23 +74,13 @@ WSGI_APPLICATION = 'expense_tracker.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
+# For free PythonAnywhere deployment, it is recommended to use SQLite.
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',  # No need to change this
-        'NAME': 'finance_tracker',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': 'localhost',  # or your database server IP
-        'PORT': '3306',  # default MySQL port
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -130,6 +120,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / "tracker" / "static"
 ]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 
 # Default primary key field type
