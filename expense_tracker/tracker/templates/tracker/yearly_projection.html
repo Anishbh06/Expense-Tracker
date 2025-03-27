@@ -1,0 +1,311 @@
+{% extends 'layouts/app.html' %}
+{% block title %}Yearly Projections{% endblock %}
+
+{% block content %}
+
+<!-- Flash Messages (for save, edit, delete actions) -->
+{% if messages %}
+<div class="container mt-2">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Page Header with Title and "Calculate New Projection" Button -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Yearly Projections</h1>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newProjectionModal">
+        Calculate New Projection
+    </button>
+</div>
+
+<style>
+    /* ======= GENERAL FORM STYLES ======= */
+    form input,
+    form select,
+    form textarea {
+        width: 100%;
+        padding: 14px 16px !important;
+        border: 2px solid black !important;
+        border-radius: 5px;
+        font-size: 16px;
+        transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        background-color: white !important;
+        color: #333;
+    }
+
+    /* ==== TEXTAREA SPACING ==== */
+    form textarea {
+        padding: 14px 16px !important;
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    /* ==== FOCUS EFFECTS ==== */
+    form input:focus,
+    form select:focus,
+    form textarea:focus {
+        border-color: black !important;
+        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+        outline: none;
+    }
+
+    /* ======= LABEL STYLES ======= */
+    form label {
+        font-weight: bold;
+        margin-bottom: 8px;
+        display: block;
+        color: black;
+    }
+
+    /* ======= PROJECTION CARD STYLES ======= */
+    .projection-card {
+        background-color: white !important;
+        transition: transform 0.2s ease-in-out;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
+
+    .projection-card:hover {
+        transform: scale(1.05);
+    }
+</style>
+
+<!-- Projection Cards Container -->
+<div class="d-flex flex-wrap gap-4 justify-content-start">
+    {% for proj in projections %}
+    <div class="projection-card shadow-lg p-4 rounded-lg" style="width: 30%; min-width: 250px; flex-grow: 1;">
+        <h3 class="text-dark font-weight-bold mb-3">{{ proj.description|default:"Projection" }}</h3>
+        <p>
+            <strong>Yearly Expense:</strong> ₹<span class="toggle-amount" data-value="{{ proj.yearly_projection }}">{{
+                proj.yearly_projection }}</span>
+        </p>
+        <p>
+            <strong>Monthly Expense:</strong> ₹<span class="toggle-amount" data-value="{{ proj.monthly_expense }}">{{
+                proj.monthly_expense }}</span>
+        </p>
+        <p>
+            <strong>Frequency:</strong> <span class="toggle-amount" data-value="{{ proj.frequency }}">{{ proj.frequency
+                }}</span> times/month
+        </p>
+        <p>
+            <strong>Expense Per Transaction:</strong> ₹<span class="toggle-amount"
+                data-value="{{ proj.expense_amount }}">{{ proj.expense_amount }}</span>
+        </p>
+        <!-- Edit & Delete Buttons -->
+        <button class="btn btn-warning btn-sm me-2" data-id="{{ proj.id }}" data-expense="{{ proj.expense_amount }}"
+            data-frequency="{{ proj.frequency }}" data-description="{{ proj.description|escapejs }}"
+            onclick="openEditModalFromData(this)">
+            ✏️ Edit
+        </button>
+
+        <form method="POST" action="{% url 'delete_projection' proj.id %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">🗑️
+                Delete</button>
+        </form>
+    </div>
+    {% empty %}
+    <p class="text-muted">No projections saved yet.</p>
+    {% endfor %}
+</div>
+
+<!-- New Projection Modal (for Calculating New Projection) -->
+<div class="modal fade" id="newProjectionModal" tabindex="-1" aria-labelledby="newProjectionModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="newProjectionForm" method="POST">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newProjectionModalLabel">Calculate New Projection</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        {{ form.expense_amount.label_tag }}<br>
+                        {{ form.expense_amount }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.frequency.label_tag }}<br>
+                        {{ form.frequency }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.description.label_tag }}<br>
+                        {{ form.description }}
+                    </div>
+                    <!-- Calculation Result Placeholder -->
+                    <div class="calculation-result mt-3" style="font-size:18px; color:#333;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" name="calculate" class="btn btn-primary" id="calculateBtn">Calculate</button>
+                    <button type="submit" name="save" class="btn btn-success">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Projection Modal (placed outside the loop) -->
+<div class="modal fade" id="editProjectionModal" tabindex="-1" aria-labelledby="editProjectionModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editProjectionForm" method="POST" action="{% url 'edit_projection' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProjectionModalLabel">Edit Projection</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="projection_id" id="editProjectionId">
+                    <div class="mb-3">
+                        <label for="editExpenseAmount" class="form-label">Expense Amount:</label>
+                        <input type="number" class="form-control" id="editExpenseAmount" name="expense_amount" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editFrequency" class="form-label">Frequency per Month:</label>
+                        <input type="number" class="form-control" id="editFrequency" name="frequency" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDescription" class="form-label">Description (Optional):</label>
+                        <textarea class="form-control" id="editDescription" name="description"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openEditModalFromData(btn) {
+    var id = btn.getAttribute('data-id');
+    var expenseAmount = btn.getAttribute('data-expense');
+    var frequency = btn.getAttribute('data-frequency');
+    var description = btn.getAttribute('data-description');
+    openEditModal(id, expenseAmount, frequency, description);
+}
+
+function openEditModal(id, expenseAmount, frequency, description) {
+    document.getElementById('editProjectionId').value = id;
+    document.getElementById('editExpenseAmount').value = expenseAmount;
+    document.getElementById('editFrequency').value = frequency;
+    document.getElementById('editDescription').value = description;
+    
+    let modal = new bootstrap.Modal(document.getElementById('editProjectionModal'));
+    modal.show();
+}
+
+    // --- Helper Functions for Number Formatting ---
+    function formatNumberINR(num) {
+        num = Number(num);
+        var x = num.toString();
+        if (x.length <= 3) return x;
+        var lastThree = x.substring(x.length - 3);
+        var otherNumbers = x.substring(0, x.length - 3);
+        if (otherNumbers != '')
+            lastThree = ',' + lastThree;
+        return otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree;
+    }
+
+    function convertToWorded(num) {
+        num = Number(num);
+        if (num < 1000) {
+            return num.toString();
+        } else if (num < 100000) { // In thousands
+            let k = num / 1000;
+            return k.toFixed(1).replace(/\.0$/, '') + "k";
+        } else {
+            let lakhs = Math.floor(num / 100000);
+            let remainder = num % 100000;
+            let thousands = Math.floor(remainder / 1000);
+            let result = lakhs + "L";
+            if (thousands > 0) {
+                result += " " + thousands + "k";
+            }
+            return result;
+        }
+    }
+
+    // --- Function to Attach Toggle Events to Elements ---
+    function attachToggleEvents(container) {
+        container.querySelectorAll('.toggle-amount').forEach(function (elem) {
+            // If the element hasn't been processed yet, store its raw value
+            if (!elem.dataset.value) {
+                elem.dataset.value = elem.textContent.trim().replace(/,/g, ''); // remove commas if any
+            }
+            // Set initial mode to "formatted" and format the text
+            elem.dataset.mode = "formatted";
+            elem.textContent = formatNumberINR(elem.dataset.value);
+            elem.style.cursor = "pointer";
+            // Remove any previous listener (optional precaution)
+            elem.replaceWith(elem.cloneNode(true));
+        });
+        // Reattach the event listeners after cloning
+        document.querySelectorAll('.toggle-amount').forEach(function (elem) {
+            elem.addEventListener('click', function () {
+                if (elem.dataset.mode === "formatted") {
+                    elem.textContent = convertToWorded(elem.dataset.value);
+                    elem.dataset.mode = "worded";
+                } else {
+                    elem.textContent = formatNumberINR(elem.dataset.value);
+                    elem.dataset.mode = "formatted";
+                }
+            });
+        });
+    }
+
+    // Initially attach toggle events to all existing toggle-amount elements
+    attachToggleEvents(document);
+
+    // --- AJAX for Calculate ---
+    document.getElementById('calculateBtn').addEventListener('click', function (e) {
+        e.preventDefault(); // Prevent normal form submission
+        var formData = new FormData(document.getElementById('newProjectionForm'));
+        // Manually append the 'calculate' parameter so it is included in the POST data
+        formData.append('calculate', 'calculate');
+        fetch("{% url 'yearly_projection' %}", {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                var resultDiv = document.querySelector('.calculation-result');
+                // Build the result HTML with spans for toggling
+                resultDiv.innerHTML = 'Your Projected Yearly Expense if you spend Rs. <strong class="toggle-amount" data-value="'
+                    + data.expense_amount + '">' + data.expense_amount + '</strong> for <strong class="toggle-amount" data-value="'
+                    + data.frequency + '">' + data.frequency + '</strong> times in a month is <span class="toggle-amount" data-value="'
+                    + data.projection_result + '" style="color: green; font-weight: bold;">₹'
+                    + data.projection_result + '</span>.';
+                // Attach toggle events to the new elements inside resultDiv
+                attachToggleEvents(resultDiv);
+            })
+            .catch(error => console.error('Error:', error));
+    });
+
+    // --- Function to open the Edit Projection Modal and pre-fill data ---
+    function openEditModal(id, expenseAmount, frequency, description) {
+        document.getElementById('editProjectionId').value = id;
+        document.getElementById('editExpenseAmount').value = expenseAmount;
+        document.getElementById('editFrequency').value = frequency;
+        document.getElementById('editDescription').value = description;
+
+        let modal = new bootstrap.Modal(document.getElementById('editProjectionModal'));
+        modal.show();
+    }
+</script>
+
+{% endblock %}

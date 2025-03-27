@@ -1,0 +1,118 @@
+{% extends 'layouts/app.html' %}
+{% load humanize %}
+{% load dict_extras %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Flash Messages -->
+  {% if messages %}
+    <div class="mb-4">
+      {% for message in messages %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>My Profile</h2>
+    <!-- Wide button for larger screens -->
+    <button type="button" class="btn btn-primary d-none d-md-block" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit Profile</button>
+  </div>
+  
+  <!-- User Information Card -->
+  <div class="card shadow mb-4">
+    <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">User Information</h5>
+      <!-- Small edit button on top-right for mobile -->
+      <button type="button" class="btn btn-outline-light btn-sm d-md-none" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit</button>
+    </div>
+    <div class="card-body">
+      <p><strong>Username:</strong> {{ user.username }}</p>
+      <p><strong>First Name:</strong> {{ user.profile.first_name|default:"Not Provided" }}</p>
+      <p><strong>Last Name:</strong> {{ user.profile.last_name|default:"Not Provided" }}</p>
+      <p><strong>Mobile:</strong> {{ user.profile.mobile|default:"Not Provided" }}</p>
+      <p><strong>Address:</strong> {{ user.profile.address|default:"Not Provided" }}</p>
+      <p><strong>Date Joined:</strong> {{ user.date_joined|date:"F j, Y" }}</p>
+    </div>
+  </div>
+
+  <!-- Current Month Financial Summary Card -->
+  <div class="card shadow mb-4">
+    <div class="card-header bg-gradient-secondary text-white">
+      <h5 class="mb-0">Financial Summary for {{ current_month }}</h5>
+    </div>
+    <div class="card-body">
+      <div class="row text-center">
+        <div class="col-md-3 mb-3">
+          <h6>Total Income</h6>
+          <p class="h5">{{ total_income|floatformat:2|intcomma }}</p>
+        </div>
+        <div class="col-md-3 mb-3">
+          <h6>Total Expenses</h6>
+          <p class="h5">{{ total_expenses|floatformat:2|intcomma }}</p>
+        </div>
+        <div class="col-md-3 mb-3">
+          <h6>Recurring Expenses</h6>
+          <p class="h5">{{ total_recurring|floatformat:2|intcomma }}</p>
+        </div>
+        <div class="col-md-3 mb-3">
+          <h6>Net Income</h6>
+          <p class="h5">{{ net_income|floatformat:2|intcomma }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Edit Profile Button for smaller screens -->
+  <div class="mb-4 d-md-none">
+    <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit Profile</button>
+  </div>
+  
+  <!-- Edit Profile Modal -->
+  <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <form method="post" action="{% url 'edit_profile' %}">
+          {% csrf_token %}
+          <div class="modal-header">
+            <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Enforced black borders for form fields -->
+            <div class="mb-3">
+              <label class="form-label fw-bold">First Name</label>
+              <input type="text" name="first_name" value="{{ user.profile.first_name }}" class="form-control w-100" 
+                     style="border: 1px solid black !important; background-color: white !important; color: black !important; border-radius: 5px; padding: 10px;">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-bold">Last Name</label>
+              <input type="text" name="last_name" value="{{ user.profile.last_name }}" class="form-control w-100" 
+                     style="border: 1px solid black !important; background-color: white !important; color: black !important; border-radius: 5px; padding: 10px;">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-bold">Mobile Number</label>
+              <input type="text" name="mobile" value="{{ user.profile.mobile }}" class="form-control w-100" 
+                     style="border: 1px solid black !important; background-color: white !important; color: black !important; border-radius: 5px; padding: 10px;">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-bold">Address</label>
+              <textarea name="address" class="form-control w-100" rows="3"
+                        style="border: 1px solid black !important; background-color: white !important; color: black !important; border-radius: 5px; padding: 10px;">{{ user.profile.address }}</textarea>
+            </div>
+          </div>
+          <div class="modal-footer d-flex justify-content-end">
+            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+</div>
+{% endblock %}

@@ -1,0 +1,237 @@
+{% extends 'layouts/app.html' %}
+{% load humanize %}
+{% load dict_extras %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Summary Cards Row -->
+  <div class="row">
+    <!-- Total Income Card -->
+    <div class="col-lg-3 col-md-6 mb-4">
+      <div class="card">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="text-sm mb-1 text-capitalize">Total Income for {{ current_month }}</p>
+              <h3 class="mb-0">{{ total_income|floatformat:2|intcomma }}</h3>
+            </div>
+            <div class="icon icon-lg icon-shape bg-gradient-success shadow text-center border-radius-lg">
+              <i class="material-symbols-rounded opacity-10" style="font-size: 32px;">attach_money</i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Total Expenses Card -->
+    <div class="col-lg-3 col-md-6 mb-4">
+      <div class="card">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="text-sm mb-1 text-capitalize">Total Expenses for {{ current_month }}</p>
+              <h3 class="mb-0">{{ total_expenses|floatformat:2|intcomma }}</h3>
+            </div>
+            <div class="icon icon-lg icon-shape bg-gradient-danger shadow text-center border-radius-lg">
+              <i class="material-symbols-rounded opacity-10" style="font-size: 32px;">money_off</i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recurring Expenses Card -->
+    <div class="col-lg-3 col-md-6 mb-4">
+      <div class="card">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="text-sm mb-1 text-capitalize">Recurring Expenses for {{ current_month }}</p>
+              <h3 class="mb-0">{{ total_recurring|floatformat:2|intcomma }}</h3>
+            </div>
+            <div class="icon icon-lg icon-shape bg-gradient-warning shadow text-center border-radius-lg">
+              <i class="material-symbols-rounded opacity-10" style="font-size: 32px;">repeat</i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Net Income Card -->
+    <div class="col-lg-3 col-md-6 mb-4">
+      <div class="card">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="text-sm mb-1 text-capitalize">Net Income for {{ current_month }}</p>
+              <h3 class="mb-0">{{ net_income|floatformat:2|intcomma }}</h3>
+            </div>
+            <div class="icon icon-lg icon-shape bg-gradient-dark shadow text-center border-radius-lg">
+              <i class="material-symbols-rounded opacity-10" style="font-size: 32px;">trending_up</i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- Chart Section -->
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5>Monthly Income vs Expenses vs Recurring</h5>
+      </div>
+      <div class="card-body">
+        <!-- Instead of style on the canvas, we use a container -->
+        <div id="chartContainer" style="height:300px;">
+          <canvas id="incomeExpenseChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+  <!-- Multi-Currency Converter Card -->
+  <div class="card mt-4">
+    <div class="card-header">
+      <h5>Currency Converter</h5>
+    </div>
+    <div class="card-body">
+      <form method="post" action="{% url 'dashboard' %}">
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-md-3">
+            <label for="from_currency" class="form-label">From</label>
+            <select class="form-select" name="from_currency" id="from_currency" 
+                    style="border: 1px solid grey !important; background-color: white !important; color: black !important; border-radius: 5px; padding: 10px;">
+              {% for code, details in currencies.items %}
+                <option value="{{ code }}" {% if from_currency == code %}selected{% endif %}>
+                  {{ details.name }} ({{ code }} {{ details.symbol }})
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="to_currency" class="form-label">To</label>
+            <select class="form-select" name="to_currency" id="to_currency" 
+                    style="border: 1px solid grey !important; background-color: white !important; color: black !important; border-radius: 5px; padding: 10px;">
+              {% for code, details in currencies.items %}
+                <option value="{{ code }}" {% if to_currency == code %}selected{% endif %}>
+                  {{ details.name }} ({{ code }} {{ details.symbol }})
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="conversion_amount" class="form-label">Amount</label>
+            <input type="number" step="0.01" class="form-control" name="conversion_amount" id="conversion_amount" value="{{ conversion_amount|default:'' }}"
+                   style="border: 1px solid grey !important; background-color: white !important; color: black !important; border-radius: 5px; padding: 10px;">
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" name="convert_currency" value="1" class="btn btn-primary w-100">Convert</button>
+          </div>
+        </div>
+      </form>
+      {% if conversion_result %}
+        <div class="mt-3">
+          <h6>Conversion Result:</h6>
+          <p>
+            {% with conv=conversion_result %}
+              <span class="toggle-amount" data-value="{{ conv }}">
+                {{ conv|floatformat:2 }}
+              </span>
+              {% if to_currency %}
+                {% with cur=currencies|get_item:to_currency %}
+                  {{ cur.symbol }}
+                {% endwith %}
+              {% endif %}
+            {% endwith %}
+          </p>
+          <p id="wordedResult"></p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+      var ctx = document.getElementById('incomeExpenseChart').getContext('2d');
+      var incomeExpenseChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+              labels: {{ chart_labels|safe }},
+              datasets: [
+                  {
+                      label: 'Income',
+                      data: {{ income_data|safe }},
+                      backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                      borderColor: 'rgba(75, 192, 192, 1)',
+                      borderWidth: 1
+                  },
+                  {
+                      label: 'Expenses',
+                      data: {{ expense_data|safe }},
+                      backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                      borderColor: 'rgba(255, 99, 132, 1)',
+                      borderWidth: 1
+                  },
+                  {
+                      label: 'Recurring Expenses',
+                      data: {{ recurring_data|safe }},
+                      backgroundColor: 'rgba(255, 159, 64, 0.7)',
+                      borderColor: 'rgba(255, 159, 64, 1)',
+                      borderWidth: 1
+                  }
+              ]
+          },
+          options: {
+              scales: {
+                  y: {
+                      beginAtZero: true
+                  }
+              }
+          }
+      });
+  });
+
+  function convertToWorded(num) {
+      num = Number(num);
+      if (num < 1000) {
+          return num.toFixed(2);
+      } else if (num < 100000) {
+          let k = num / 1000;
+          return k.toFixed(1).replace(/\.0$/, '') + "k";
+      } else {
+          let lakhs = num / 100000;
+          return lakhs.toFixed(1).replace(/\.0$/, '') + "L";
+      }
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+      var toggleElems = document.querySelectorAll('.toggle-amount');
+      toggleElems.forEach(function(elem) {
+          elem.addEventListener('click', function() {
+              var current = elem.textContent.trim();
+              var raw = elem.getAttribute('data-value');
+              if (current === raw) {
+                  elem.textContent = convertToWorded(raw);
+              } else {
+                  elem.textContent = raw;
+              }
+          });
+          var worded = convertToWorded(elem.getAttribute('data-value'));
+          document.getElementById("wordedResult").textContent = "In words: " + worded;
+      });
+  });
+</script>
+<!-- Override chart height on mobile -->
+<style>
+  @media (max-width: 767px) {
+    .chart-container {
+      height: 50px !important; /* or your desired bigger height */
+    }
+  }
+  </style>
+{% endblock %}

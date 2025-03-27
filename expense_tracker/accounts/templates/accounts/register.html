@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="apple-touch-icon" sizes="76x76" href="/static/assets/img/apple-icon.png">
+  <link rel="icon" type="image/png" href="/static/assets/img/favicon.png">
+  <title>Expense Tracker - Sign Up</title>
+  <!-- Fonts and Icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
+  <link href="/static/assets/css/nucleo-icons.css" rel="stylesheet">
+  <link href="/static/assets/css/nucleo-svg.css" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@400;opsz@24&display=swap" />
+  <!-- Material Dashboard CSS -->
+  <link id="pagestyle" href="/static/assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet">
+  <style>
+    body { background-color: #f5f5f5; }
+    .custom-input {
+      border: 1px solid #ced4da !important;
+      border-radius: 5px !important;
+      padding: 10px !important;
+      color: #000 !important;
+      background-color: #fff !important;
+    }
+    .custom-form-group {
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body class="bg-gray-200">
+  <main class="main-content mt-0">
+    <div class="page-header align-items-start min-vh-100"
+         style="background-image: url('https://images.unsplash.com/photo-1497294815431-9365093b7331?ixlib=rb-1.2.1&amp;auto=format&amp;fit=crop&amp;w=1950&amp;q=80');
+                background-size: cover; background-position: center;">
+      <span class="mask bg-gradient-dark opacity-6"></span>
+      <div class="container my-auto">
+        <div class="row">
+          <div class="col-xl-4 col-lg-5 col-md-7 mx-auto">
+            <div class="card" style="background-color: #fff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+              <div class="card-header text-center" style="background-color: #fff; border-bottom: none;">
+                <h4 class="font-weight-bolder" style="color: #000;">Sign Up</h4>
+                <p class="mb-0" style="color: #000;">Enter your details to create an account</p>
+              </div>
+              <div class="card-body px-4">
+                <!-- Flash Messages -->
+                {% if messages %}
+                  {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                      {{ message }}
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                  {% endfor %}
+                {% endif %}
+
+                <!-- Registration Form -->
+                <form method="post" action="{% url 'register' %}">
+                  {% csrf_token %}
+
+                  <!-- Display form errors -->
+                  {% if form.errors %}
+                    <div class="alert alert-danger">
+                      <ul class="mb-0">
+                        {% for field in form %}
+                          {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                          {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                          <li>{{ error }}</li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  {% endif %}
+
+                  <!-- Username -->
+                  <div class="custom-form-group">
+                    <label class="form-label" style="color: #000;">Username</label>
+                    {{ form.username }}
+                  </div>
+
+                  <!-- Password1 -->
+                  <div class="custom-form-group">
+                    <label class="form-label" style="color: #000;">Password</label>
+                    {{ form.password1 }}
+                  </div>
+
+                  <!-- Password2 -->
+                  <div class="custom-form-group">
+                    <label class="form-label" style="color: #000;">Confirm Password</label>
+                    {{ form.password2 }}
+                  </div>
+
+                  <div class="text-center">
+                    <button type="submit" class="btn bg-gradient-dark w-100 my-3">Sign Up</button>
+                  </div>
+                </form>
+              </div>
+              <div class="card-footer text-center" style="background-color: #fff; border-top: none;">
+                <p class="mb-2 text-sm" style="color: #000;">
+                  Already have an account?
+                  <a href="{% url 'login' %}" class="text-primary font-weight-bold">Sign In</a>
+                </p>
+              </div>
+            </div> <!-- end card -->
+          </div> <!-- end col -->
+        </div> <!-- end row -->
+      </div> <!-- end container -->
+    </div> <!-- end page-header -->
+  </main>
+  <!-- Core JS Files -->
+  <script src="/static/assets/js/core/popper.min.js"></script>
+  <script src="/static/assets/js/core/bootstrap.min.js"></script>
+  <script src="/static/assets/js/material-dashboard.min.js?v=3.2.0"></script>
+</body>
+</html>

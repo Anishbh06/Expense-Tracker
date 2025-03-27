@@ -1,0 +1,267 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="apple-touch-icon" sizes="76x76" href="{% static 'assets/img/apple-icon.png' %}">
+  <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}">
+  <title>Expense Tracker</title>
+
+  <!-- Google Fonts -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@400;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900">
+
+  <!-- Nucleo Icons -->
+  <link href="{% static 'assets/css/nucleo-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/css/nucleo-svg.css' %}" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+
+  <!-- Material Dashboard CSS (includes Bootstrap 5) -->
+  <link id="pagestyle" href="{% static 'assets/css/material-dashboard.css' %}?v=3.2.0" rel="stylesheet">
+
+  <!-- Custom CSS overrides -->
+  <style>
+    /* Increase sidebar nav link font size */
+    .sidenav .navbar-nav .nav-link {
+      font-size: 0.9rem !important;
+    }
+    /* Increase navbar link font size */
+    .navbar-main .navbar-nav .nav-link {
+      font-size: 1.2rem !important;
+    }
+    /* Increase breadcrumb font size */
+    .navbar-main .breadcrumb,
+    .navbar-main .breadcrumb li,
+    .navbar-main .breadcrumb li a {
+      font-size: 1.1rem !important;
+    }
+    /* Toggler icon styling */
+    .navbar-toggler {
+      border: none !important;
+      outline: none !important;
+      z-index: 1050; /* ensure toggler appears above other content */
+    }
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' "
+      + "xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(0, 0, 0, 0.8)' "
+      + "stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 "
+      + "15h22M4 23h22'/%3E%3C/svg%3E") !important;
+      width: 1.5em;
+      height: 1.5em;
+    }
+    /* Offcanvas overrides for the small-screen menu */
+    .offcanvas-header .offcanvas-title {
+      font-size: 1.5rem;
+    }
+    .offcanvas-body .nav-link {
+      font-size: 1.2rem !important;
+    }
+
+    /*
+      Ensure the main content doesn't go behind the sidebar on large screens.
+      For example, if the sidebar is ~250px wide, we can add margin-left: 250px.
+      Adjust as needed for your sidebar width.
+    */
+    @media (min-width: 1200px) {
+      main.main-content {
+        margin-left: 250px; /* or 260px, depending on your actual sidebar width */
+      }
+    }
+  </style>
+</head>
+
+<body class="g-sidenav-show bg-gray-100">
+  <!-- Regular Sidebar for ≥1200px screens -->
+  <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg bg-white d-none d-xl-block" id="sidenav-main" style="width:250px;">
+    <div class="sidenav-header">
+      <i class="fas fa-times p-3 cursor-pointer text-dark opacity-5 position-absolute end-0 top-0 d-none"
+         aria-hidden="true" id="iconSidenav"></i>
+      <a class="navbar-brand px-4 py-3 m-0" href="{% url 'dashboard' %}">
+        <img src="{% static 'assets/img/logo-ct-dark.png' %}" class="navbar-brand-img" width="26" height="26" alt="main_logo">
+        <span class="ms-1 text-sm text-dark">Expense Tracker</span>
+      </a>
+    </div>
+    <hr class="horizontal dark mt-0 mb-2">
+    <div class="navbar-collapse w-auto" id="sidenav-collapse-main">
+      <ul class="navbar-nav">
+        <!-- EXACT SAME MENU ITEMS FOR LARGE SCREENS -->
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+             href="{% url 'dashboard' %}">
+            <span class="material-symbols-rounded opacity-5">dashboard</span>
+            <span class="nav-link-text ms-1">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'expense_tracking' %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+             href="{% url 'expense_tracking' %}">
+            <i class="material-symbols-rounded opacity-5">add</i>
+            <span class="nav-link-text ms-1">Expenses</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'yearly_projection' %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+             href="{% url 'yearly_projection' %}">
+            <i class="material-symbols-rounded opacity-5">timeline</i>
+            <span class="nav-link-text ms-1">Yearly Projection</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'recurring_expense' %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+             href="{% url 'recurring_expense' %}">
+            <i class="material-symbols-rounded opacity-5">repeat</i>
+            <span class="nav-link-text ms-1">Recurring Expenses</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'income_tracking' %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+             href="{% url 'income_tracking' %}">
+            <i class="material-symbols-rounded opacity-5">attach_money</i>
+            <span class="nav-link-text ms-1">Income Tracker</span>
+          </a>
+        </li>
+        <li class="nav-item mt-3">
+          <h6 class="ps-4 ms-2 text-uppercase text-xs text-dark font-weight-bolder opacity-5">Account pages</h6>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'profile' %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+             href="{% url 'profile' %}">
+            <i class="material-symbols-rounded opacity-5">person</i>
+            <span class="nav-link-text ms-1">Profile</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'logout' %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+             href="{% url 'logout' %}">
+            <i class="material-symbols-rounded opacity-5">logout</i>
+            <span class="nav-link-text ms-1">Logout</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </aside>
+  <!-- End Regular Sidebar (≥1200px) -->
+
+  <!-- Offcanvas Sidebar for <1200px screens -->
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasSidebar" aria-labelledby="offcanvasSidebarLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="offcanvasSidebarLabel">Menu</h5>
+      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <ul class="navbar-nav">
+        <!-- EXACT SAME MENU ITEMS FOR SMALL SCREENS -->
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+             href="{% url 'dashboard' %}">
+            <span class="material-symbols-rounded opacity-5">dashboard</span>
+            <span class="nav-link-text ms-1">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'expense_tracking' %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+             href="{% url 'expense_tracking' %}">
+            <i class="material-symbols-rounded opacity-5">add</i>
+            <span class="nav-link-text ms-1">Expenses</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'yearly_projection' %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+             href="{% url 'yearly_projection' %}">
+            <i class="material-symbols-rounded opacity-5">timeline</i>
+            <span class="nav-link-text ms-1">Yearly Projection</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'recurring_expense' %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+             href="{% url 'recurring_expense' %}">
+            <i class="material-symbols-rounded opacity-5">repeat</i>
+            <span class="nav-link-text ms-1">Recurring Expenses</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'income_tracking' %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+             href="{% url 'income_tracking' %}">
+            <i class="material-symbols-rounded opacity-5">attach_money</i>
+            <span class="nav-link-text ms-1">Income Tracker</span>
+          </a>
+        </li>
+        <li class="nav-item mt-3">
+          <h6 class="ps-4 ms-2 text-uppercase text-xs text-dark font-weight-bolder opacity-5">Account pages</h6>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'profile' %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+             href="{% url 'profile' %}">
+            <i class="material-symbols-rounded opacity-5">person</i>
+            <span class="nav-link-text ms-1">Profile</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'logout' %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}"
+             href="{% url 'logout' %}">
+            <i class="material-symbols-rounded opacity-5">logout</i>
+            <span class="nav-link-text ms-1">Logout</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <!-- End Offcanvas Sidebar -->
+
+  <!-- Main Content -->
+  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
+    <!-- Navbar (Updated) -->
+    <nav class="navbar navbar-main navbar-expand-lg navbar-light px-0 mx-3 shadow-none border-radius-xl" id="navbarBlur" data-scroll="true">
+      <div class="container-fluid py-1 px-3">
+        <!-- For <1200px screens, hamburger toggles the offcanvas menu -->
+        <div class="d-flex align-items-center me-3 d-xl-none">
+          <button class="btn btn-outline-secondary me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSidebar" aria-controls="offcanvasSidebar">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        </div>
+        <nav aria-label="breadcrumb" class="navbar-main">
+          <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5" style="font-size:1.5rem !important;">
+            <li class="breadcrumb-item text-sm">
+              <a class="opacity-5 text-dark" href="{% url 'dashboard' %}">Expense Tracker</a>
+            </li>
+            <li class="breadcrumb-item text-sm text-dark active" aria-current="page">
+              {% block breadcrumb %}Dashboard{% endblock %}
+            </li>
+          </ol>
+        </nav>
+        <ul class="navbar-nav d-flex align-items-center justify-content-end ms-auto">
+          <!-- Account Dropdown -->
+          <li class="nav-item dropdown ms-3">
+            <a class="nav-link dropdown-toggle d-flex align-items-center text-body font-weight-bold px-0"
+               href="#" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="material-symbols-rounded">account_circle</i>
+              <span class="ms-1 text-dark">{{ request.user.username|capfirst }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
+              <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
+              <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <!-- End Navbar -->
+
+    <div class="container-fluid py-4">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+  <!-- End Main Content -->
+
+  <!-- JS Files -->
+  <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+  <script src="{% static 'assets/js/core/bootstrap.min.js' %}"></script>
+  <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
+  <script src="{% static 'assets/js/material-dashboard.min.js' %}?v=3.2.0"></script>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>
