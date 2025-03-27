@@ -76,18 +76,15 @@
     </div>
   </div>
 
-    <!-- Chart Section -->
-    <div class="card mt-4">
-      <div class="card-header">
-        <h5>Monthly Income vs Expenses vs Recurring</h5>
-      </div>
-      <div class="card-body">
-        <!-- Instead of style on the canvas, we use a container -->
-        <div id="chartContainer" style="height:300px;">
-          <canvas id="incomeExpenseChart"></canvas>
-        </div>
-      </div>
+  <!-- Chart Section -->
+  <div class="card mt-4">
+    <div class="card-header">
+      <h5>Monthly Income vs Expenses vs Recurring</h5>
     </div>
+    <div class="card-body">
+      <canvas id="incomeExpenseChart" class="dashboard-chart" style="height:300px;"></canvas>
+    </div>
+  </div>
 
   <!-- Multi-Currency Converter Card -->
   <div class="card mt-4">
@@ -229,8 +226,8 @@
 <!-- Override chart height on mobile -->
 <style>
   @media (max-width: 767px) {
-    .chart-container {
-      height: 50px !important; /* or your desired bigger height */
+    .dashboard-chart {
+      height: 220px !important; /* or your desired bigger height */
     }
   }
   </style>
